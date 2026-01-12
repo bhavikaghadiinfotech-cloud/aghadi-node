@@ -10,20 +10,22 @@ function createTransporter() {
   }
 
   return nodemailer.createTransport({
-    host: MAIL_HOST,
-    port: Number(MAIL_PORT),
-    secure: false, // true only for 465
+    host: process.env.MAIL_HOST,
+    port: Number(process.env.MAIL_PORT || 587),
+    secure: false, // 587 = STARTTLS (false)
     auth: {
-      user: MAIL_USER,
-      pass: MAIL_PASS,
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
     },
+    requireTLS: true,
   });
 }
 
 async function sendWelcomeEmail({ to, name, email, password }) {
   const transporter = createTransporter();
 
-  const from = process.env.MAIL_FROM || process.env.MAIL_USER;
+  const from = process.env.MAIL_FROM;
+  const replyTo = process.env.MAIL_REPLY_TO;
 
   const subject = "Welcome! Your account details";
 
@@ -59,7 +61,7 @@ async function sendWelcomeEmail({ to, name, email, password }) {
     </div>
   `;
 
-  await transporter.sendMail({ from, to, subject, html });
+  await transporter.sendMail({ from, replyTo, to, subject, html });
 }
 
 function escapeHtml(str = "") {
