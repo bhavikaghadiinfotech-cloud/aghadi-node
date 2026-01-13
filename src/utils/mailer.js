@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const axios = require("axios");
+const apiKey = process.env.BREVO_API_KEY;
 
 function createTransporter() {
   const { MAIL_HOST, MAIL_PORT, MAIL_USER, MAIL_PASS } = process.env;
@@ -69,7 +70,7 @@ function createTransporter() {
 //   await transporter.sendMail({ from, replyTo, to, subject, html });
 // }
 async function sendWelcomeEmail({ to, name, email, password }) {
-  const apiKey = process.env.BREVO_API_KEY;
+  
   if (!apiKey) throw new Error("BREVO_API_KEY missing in env");
 
   const from = process.env.MAIL_FROM;
