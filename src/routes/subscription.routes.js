@@ -7,6 +7,11 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
 }
 
+// ✅ browser test route
+router.get("/subscribe", (req, res) => {
+  res.json({ ok: true, message: "Use POST /api/subscribe with { email }" });
+});
+
 router.post("/subscribe", async (req, res) => {
   try {
     const { email } = req.body || {};
@@ -35,7 +40,11 @@ router.post("/subscribe", async (req, res) => {
     });
   } catch (err) {
     console.error("Subscribe error:", err);
-    return res.status(500).json({ ok: false, message: "Server error", error: err.message });
+    return res.status(500).json({
+      ok: false,
+      message: "Server error",
+      error: err.message,
+    });
   }
 });
 
