@@ -3,7 +3,9 @@ const axios = require("axios");
 async function sendWelcomeEmail({ to, name, email, password }) {
   const apiKey = process.env.BREVO_API_KEY; // ✅ read at runtime
   if (!apiKey) {
-    throw new Error("BREVO_API_KEY missing in env (must be Brevo API key starting with xkeysib-)");
+    throw new Error(
+      "BREVO_API_KEY missing in env (must be Brevo API key starting with xkeysib-)"
+    );
   }
 
   const from = process.env.MAIL_FROM;
@@ -27,15 +29,21 @@ async function sendWelcomeEmail({ to, name, email, password }) {
       <table style="border-collapse: collapse;">
         <tr>
           <td style="padding:6px 10px; border:1px solid #ddd;"><b>Username</b></td>
-          <td style="padding:6px 10px; border:1px solid #ddd;">${escapeHtml(name)}</td>
+          <td style="padding:6px 10px; border:1px solid #ddd;">${escapeHtml(
+            name
+          )}</td>
         </tr>
         <tr>
           <td style="padding:6px 10px; border:1px solid #ddd;"><b>Email</b></td>
-          <td style="padding:6px 10px; border:1px solid #ddd;">${escapeHtml(email)}</td>
+          <td style="padding:6px 10px; border:1px solid #ddd;">${escapeHtml(
+            email
+          )}</td>
         </tr>
         <tr>
           <td style="padding:6px 10px; border:1px solid #ddd;"><b>Password</b></td>
-          <td style="padding:6px 10px; border:1px solid #ddd;">${escapeHtml(password)}</td>
+          <td style="padding:6px 10px; border:1px solid #ddd;">${escapeHtml(
+            password
+          )}</td>
         </tr>
       </table>
 
@@ -53,14 +61,18 @@ async function sendWelcomeEmail({ to, name, email, password }) {
   };
 
   try {
-    const res = await axios.post("https://api.brevo.com/v3/smtp/email", payload, {
-      headers: {
-        "api-key": apiKey,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      timeout: 20000,
-    });
+    const res = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      payload,
+      {
+        headers: {
+          "api-key": apiKey,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        timeout: 20000,
+      }
+    );
 
     return res.data;
   } catch (err) {
@@ -72,6 +84,50 @@ async function sendWelcomeEmail({ to, name, email, password }) {
   }
 }
 
+async function sendThankYouSubscribeEmail({ to }) {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) throw new Error("BREVO_API_KEY missing in env");
+
+  const from = process.env.MAIL_FROM;
+  if (!from) throw new Error("MAIL_FROM missing in env");
+
+  const match = String(from).match(/^(.*)<(.*)>$/);
+  const fromName = match ? match[1].trim().replace(/^"|"$/g, "") : "Aghadi";
+  const fromEmail = match ? match[2].trim() : from;
+
+  const replyTo = process.env.MAIL_REPLY_TO;
+
+  const subject = "Thanks for subscribing!";
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+      <h2>Thank you for subscribing!</h2>
+      <p>We’ve received your email and you’re now subscribed.</p>
+      <p>We’ll keep you updated with important news and updates.</p>
+      <p style="margin-top:16px;">Thanks,<br/>Aghadi Infotech</p>
+    </div>
+  `;
+
+  const payload = {
+    sender: { name: fromName, email: fromEmail },
+    to: [{ email: to }],
+    subject,
+    htmlContent,
+    ...(replyTo ? { replyTo: { email: replyTo } } : {}),
+  };
+
+  const res = await axios.post("https://api.brevo.com/v3/smtp/email", payload, {
+    headers: {
+      "api-key": apiKey,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    timeout: 20000,
+  });
+
+  return res.data;
+}
+
 function escapeHtml(str = "") {
   return String(str)
     .replaceAll("&", "&amp;")
@@ -81,4 +137,4 @@ function escapeHtml(str = "") {
     .replaceAll("'", "&#039;");
 }
 
-module.exports = { sendWelcomeEmail };
+module.exports = { sendWelcomeEmail, sendThankYouSubscribeEmail };

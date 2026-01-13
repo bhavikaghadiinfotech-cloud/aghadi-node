@@ -1,5 +1,6 @@
 const express = require("express");
 const pool = require("../db/pool");
+const { sendThankYouSubscribeEmail } = require("../utils/mailer");
 
 const router = express.Router();
 
@@ -7,7 +8,6 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
 }
 
-// ✅ browser test route
 router.get("/subscribe", (req, res) => {
   res.json({ ok: true, message: "Use POST /api/subscribe with { email }" });
 });
@@ -15,7 +15,9 @@ router.get("/subscribe", (req, res) => {
 router.post("/subscribe", async (req, res) => {
   try {
     const { email } = req.body || {};
-    const cleanEmail = String(email || "").toLowerCase().trim();
+    const cleanEmail = String(email || "")
+      .toLowerCase()
+      .trim();
 
     if (!cleanEmail) {
       return res.status(400).json({ ok: false, message: "Email is required" });
@@ -32,6 +34,16 @@ router.post("/subscribe", async (req, res) => {
        RETURNING id, email, status, created_at`,
       [cleanEmail]
     );
+
+    // ✅ Send thank you email (do not break API if it fails)
+    try {
+      await sendThankYouSubscribeEmail({ to: cleanEmail });
+    } catch (e) {
+      console.error(
+        "Subscribe thank-you email failed:",
+        e?.response?.data || e.message
+      );
+    }
 
     return res.status(201).json({
       ok: true,
