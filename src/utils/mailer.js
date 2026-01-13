@@ -127,8 +127,9 @@ async function sendWelcomeEmail({ to, name, email, password }) {
   const res = await axios.post("https://api.brevo.com/v3/smtp/email", payload, {
     headers: {
       "api-key": apiKey,
-      "content-type": "application/json",
-      accept: "application/json",
+      "X-API-KEY": apiKey,
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
     timeout: 20000,
   });
