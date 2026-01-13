@@ -3,6 +3,8 @@ const cors = require("cors");
 require("dotenv").config();
 
 const authRoutes = require("./src/routes/auth.routes");
+const subscriptionRoutes = require("./src/routes/subscription.routes");
+
 const pool = require("./src/db/pool");
 
 const app = express();
@@ -14,6 +16,7 @@ app.get("/", (req, res) =>
 );
 
 app.use("/api/auth", authRoutes);
+app.use("/api", subscriptionRoutes);
 
 async function start() {
   try {
