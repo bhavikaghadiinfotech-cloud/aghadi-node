@@ -4,25 +4,29 @@ function createTransporter() {
   const { MAIL_HOST, MAIL_PORT, MAIL_USER, MAIL_PASS } = process.env;
 
   if (!MAIL_HOST || !MAIL_PORT || !MAIL_USER || !MAIL_PASS) {
-    throw new Error(
-      "Mail config missing in .env (MAIL_HOST/MAIL_PORT/MAIL_USER/MAIL_PASS)"
-    );
+    throw new Error("Mail config missing in env");
   }
 
-  return nodemailer.createTransport({
-    host: process.env.MAIL_HOST,
-    port: Number(process.env.MAIL_PORT || 587),
-    secure: false, // 587 = STARTTLS (false)
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS,
-    },
+  const transporter = nodemailer.createTransport({
+    host: MAIL_HOST,
+    port: Number(MAIL_PORT),
+    secure: false, // 587 uses STARTTLS
+    auth: { user: MAIL_USER, pass: MAIL_PASS },
     requireTLS: true,
+    tls: {
+      minVersion: "TLSv1.2",
+      // Usually NOT needed, but helps if TLS chain causes trouble:
+      // rejectUnauthorized: false,
+    },
   });
+
+  return transporter;
 }
 
 async function sendWelcomeEmail({ to, name, email, password }) {
   const transporter = createTransporter();
+  await transporter.verify();
+  console.log("SMTP verified OK");
 
   const from = process.env.MAIL_FROM;
   const replyTo = process.env.MAIL_REPLY_TO;

@@ -162,4 +162,19 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get("/test-email", async (req, res) => {
+  try {
+    await sendWelcomeEmail({
+      to: req.query.to || "your@email.com",
+      name: "Test User",
+      email: "bhavik.aghadiinfotech@gmail.com",
+      password: "Bhavik@0825"
+    });
+    res.json({ ok: true, message: "Email sent" });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 module.exports = router;
